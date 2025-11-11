@@ -1,0 +1,30 @@
+Contratos vencendo 30d :=
+COUNTROWS(
+    FILTER(
+        Contratos,
+        Contratos[dias_para_vencer] >= 0 &&
+        Contratos[dias_para_vencer] <= 30
+    )
+)
+
+Valor contratos 30d :=
+SUMX(
+    FILTER(
+        Contratos,
+        Contratos[dias_para_vencer] >= 0 &&
+        Contratos[dias_para_vencer] <= 30
+    ),
+    Contratos[valor_total]
+)
+
+Status vencimento :=
+VAR d = Contratos[dias_para_vencer]
+RETURN
+IF(
+    ISBLANK(d), "Sem data",
+    IF(d < 0, "Vencido",
+        IF(d <= 30, "Vence em 30d",
+            IF(d <= 60, "Vence em 60d", "Vigente")
+        )
+    )
+)

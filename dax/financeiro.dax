@@ -1,0 +1,11 @@
+Despesas Pagas := SUM('vw_execucao_despesa_mensal'[valor_pago])
+
+Despesas Empenhadas := SUM('vw_execucao_despesa_mensal'[valor_empenhado])
+
+Receita Arrecadada := SUM('vw_execucao_receita_mensal'[valor_arrecadado])
+
+Execução % := 
+DIVIDE(
+    [Despesas Pagas],
+    [Receita Arrecadada]
+)

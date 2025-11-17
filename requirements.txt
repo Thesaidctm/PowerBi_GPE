@@ -4,3 +4,8 @@ sqlalchemy
 asyncmy
 pydantic
 pydantic-settings
+pandas
+plotly
+dash
+httpx
+python-dotenv

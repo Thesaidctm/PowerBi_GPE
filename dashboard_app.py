@@ -127,7 +127,7 @@ def build_month_label(mes: int) -> str:
     return str(mes)
 
 
-app = Dash(__name__, title="Módulo Gestor - Coronel Murta")
+app = Dash(__name__, title="Módulo Gestor - Coronel Murta", suppress_callback_exceptions=True)
 
 app.layout = html.Div(
     [

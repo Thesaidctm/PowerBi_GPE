@@ -1,5 +1,6 @@
 import os
 from datetime import datetime
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import httpx
@@ -7,7 +8,8 @@ from dash import Dash, Input, Output, dash_table, dcc, html
 from dotenv import load_dotenv
 import plotly.express as px
 
-load_dotenv()
+env_path = Path(__file__).resolve().parent / ".env"
+load_dotenv(env_path)
 
 API_URL = os.getenv("API_URL", "http://localhost:8000").rstrip("/")
 TIMEOUT = httpx.Timeout(10.0)

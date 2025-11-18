@@ -1,18 +1,29 @@
-import os
+import asyncio
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-import httpx
 from dash import Dash, Input, Output, dash_table, dcc, html
 from dotenv import load_dotenv
 import plotly.express as px
 
+from app.database import SessionLocal
+from app.routers.dashboard_licitacoes_contratos import (
+    get_contratos_proximos_vencimentos as fetch_contratos_proximos_vencimentos,
+    get_licitacoes_resumo as fetch_licitacoes_resumo,
+)
+from app.routers.dashboard_obras_convenios import (
+    get_convenios_resumo as fetch_convenios_resumo,
+    get_obras_resumo as fetch_obras_resumo,
+)
+from app.routers.dashboard_overview import get_dashboard_overview
+from app.routers.dashboard_receita_despesa import (
+    get_despesa_resumo as fetch_despesa_resumo,
+    get_receita_resumo as fetch_receita_resumo,
+)
+
 env_path = Path(__file__).resolve().parent / ".env"
 load_dotenv(env_path)
-
-API_URL = os.getenv("API_URL", "http://localhost:8000").rstrip("/")
-TIMEOUT = httpx.Timeout(10.0)
 
 
 def format_currency(valor: Optional[float]) -> str:
@@ -31,40 +42,40 @@ def format_number(valor: Optional[float]) -> str:
     return formatted
 
 
-def api_get(path: str, params: Optional[Dict[str, Any]] = None) -> Any:
-    url = f"{API_URL}{path}"
-    response = httpx.get(url, params=params, timeout=TIMEOUT)
-    response.raise_for_status()
-    return response.json()
+async def _fetch_with_session(async_fn, **kwargs) -> Dict[str, Any]:
+    async with SessionLocal() as session:
+        result = await async_fn(session=session, **kwargs)
+    if hasattr(result, "model_dump"):
+        return result.model_dump()
+    return result
 
 
 def get_overview(ano: Optional[int] = None) -> Any:
-    params = {"ano": ano} if ano else None
-    return api_get("/dashboard/overview", params=params)
+    return asyncio.run(_fetch_with_session(get_dashboard_overview, ano=ano))
 
 
 def get_receita_resumo(ano: int) -> Any:
-    return api_get("/dashboard/receita/resumo", params={"ano": ano})
+    return asyncio.run(_fetch_with_session(fetch_receita_resumo, ano=ano))
 
 
 def get_despesa_resumo(ano: int) -> Any:
-    return api_get("/dashboard/despesa/resumo", params={"ano": ano})
+    return asyncio.run(_fetch_with_session(fetch_despesa_resumo, ano=ano))
 
 
 def get_licitacoes_resumo(ano: int) -> Any:
-    return api_get("/dashboard/licitacoes/resumo", params={"ano": ano})
+    return asyncio.run(_fetch_with_session(fetch_licitacoes_resumo, ano=ano))
 
 
 def get_contratos_proximos_vencimentos(dias: int) -> Any:
-    return api_get("/dashboard/contratos/proximos-vencimentos", params={"dias": dias})
+    return asyncio.run(_fetch_with_session(fetch_contratos_proximos_vencimentos, dias=dias))
 
 
 def get_obras_resumo() -> Any:
-    return api_get("/dashboard/obras/resumo")
+    return asyncio.run(_fetch_with_session(fetch_obras_resumo))
 
 
 def get_convenios_resumo() -> Any:
-    return api_get("/dashboard/convenios/resumo")
+    return asyncio.run(_fetch_with_session(fetch_convenios_resumo))
 
 
 def card_component(titulo: str, valor: str) -> html.Div:

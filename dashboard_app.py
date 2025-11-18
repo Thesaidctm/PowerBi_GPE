@@ -129,6 +129,37 @@ def build_month_label(mes: int) -> str:
 
 app = Dash(__name__, title="Módulo Gestor - Coronel Murta", suppress_callback_exceptions=True)
 
+# Define a validation layout that includes every component referenced by callbacks
+# to avoid "ID not found in layout" errors when tabs are not currently rendered.
+app.validation_layout = html.Div(
+    [
+        html.Div(
+            [
+                html.H1("Módulo Gestor - Painel da Prefeitura"),
+                dcc.Input(id="ano-input"),
+                dcc.Tabs(id="tabs"),
+                html.Div(id="tab-content"),
+                dcc.Interval(id="overview-interval"),
+            ]
+        ),
+        html.Div(
+            [
+                html.Div(id="overview-cards"),
+                html.Div(id="totais-receita-despesa"),
+                dcc.Graph(id="receita-mensal-graph"),
+                dcc.Graph(id="despesa-mensal-graph"),
+                dcc.Graph(id="licitacoes-status-graph"),
+                dcc.Graph(id="licitacoes-modalidade-graph"),
+                dash_table.DataTable(id="contratos-table"),
+                dcc.Graph(id="obras-situacao-graph"),
+                dash_table.DataTable(id="obras-atrasadas-table"),
+                dcc.Graph(id="convenios-orgaos-graph"),
+                dash_table.DataTable(id="convenios-risco-table"),
+            ]
+        ),
+    ]
+)
+
 app.layout = html.Div(
     [
         html.H1(

@@ -33,7 +33,7 @@ async def get_dashboard_overview(
         session,
         """
         SELECT COALESCE(SUM(valor_previsto), 0)
-        FROM view_mov_rec
+        FROM receita_loa
         WHERE ano = :ano
         """,
         {"ano": ano_ref},

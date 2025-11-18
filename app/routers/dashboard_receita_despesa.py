@@ -61,16 +61,23 @@ async def get_receita_resumo(
     serie_result = await session.execute(
         text(
             """
-            SELECT mes,
-                   COALESCE(SUM(valor_arrecadado), 0) AS receita_realizada_mes,
-                   COALESCE(SUM(valor_arrecadado_ano_anterior), 0) AS receita_mes_ano_anterior
-            FROM view_mov_rec
-            WHERE ano = :ano
-            GROUP BY mes
-            ORDER BY mes
+            SELECT vr.mes,
+                   COALESCE(SUM(vr.valor_arrecadado), 0) AS receita_realizada_mes,
+                   COALESCE(
+                       (
+                           SELECT SUM(vra.valor_arrecadado)
+                           FROM view_mov_rec vra
+                           WHERE vra.ano = :ano_anterior AND vra.mes = vr.mes
+                       ),
+                       0
+                   ) AS receita_mes_ano_anterior
+            FROM view_mov_rec vr
+            WHERE vr.ano = :ano
+            GROUP BY vr.mes
+            ORDER BY vr.mes
             """
         ),
-        {"ano": ano},
+        {"ano": ano, "ano_anterior": ano - 1},
     )
     serie_mensal = [
         ReceitaMensal(
